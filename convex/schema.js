@@ -13,13 +13,13 @@ export default defineSchema({
     .searchIndex("search_name" , {searchField: "name"})
     .searchIndex("search_email" , {searchField: "email"}),
     
-  expense: defineTable({
+  expenses: defineTable({
     description: v.string(),
     amount: v.number(),
     category: v.optional(v.string()),
     date: v.number(),
     paidByUserId: v.id("users"),
-    spiltType: v.string(),
+    splitType: v.string(),
     splits: v.array(
       v.object({
         userId: v.id("users"),

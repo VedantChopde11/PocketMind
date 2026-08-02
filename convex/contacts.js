@@ -4,23 +4,30 @@ import { v } from "convex/values";
 
 export const getAllContacts = query({
     handler: async(ctx) => {
-        const currentUser = await ctx.runQuery(internal.users.getCurrentUser)
+        const identity = await ctx.auth.getUserIdentity();
+
+        const currentUser = await ctx.db
+        .query("users")
+        .withIndex("by_token", (q) =>
+            q.eq("tokenIdentifier", identity.tokenIdentifier)
+        )
+        .unique();
 
         const expensesYouPaid = await ctx.db
             .query("expenses")
-            .withIndex("by_user_and_group" , (q) => {
+            .withIndex("by_user_and_group" , (q) => 
                 q.eq("paidByUserId" , currentUser._id).eq("groupId" , undefined)
 
-            })
+            )
             .collect()
 
         const expensesNotPaidByYou = (
             await ctx.db
             .query("expenses")
-            .withIndex("by_group" , (q) => {
+            .withIndex("by_group" , (q) => 
                 q.eq("groupId" , undefined)
 
-            })
+            )
             .collect()
         ).filter(
             (e) => 
@@ -98,7 +105,14 @@ export const createGroup = mutation({
   },
   handler: async (ctx, args) => {
    
-    const currentUser = await ctx.runQuery(internal.users.getCurrentUser);
+    const identity = await ctx.auth.getUserIdentity();
+
+    const currentUser = await ctx.db
+    .query("users")
+    .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+    )
+    .unique();
 
     if (!args.name.trim()) throw new Error("Group name cannot be empty");
 
