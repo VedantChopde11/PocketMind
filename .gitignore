@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Convex AI helper files 
+AGENTS.md
+CLAUDE.md
+convex/_generated/ai/
