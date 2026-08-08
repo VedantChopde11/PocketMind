@@ -13,28 +13,24 @@ import { Plus, Users, User } from "lucide-react";
 import { CreateGroupModal } from "./_components/create-group-modal";
 
 export default function ContactsPage() {
-  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(
+    searchParams.get("createGroup") === "true"
+  );
+  const router = useRouter();
+  
 
   const { data, isLoading } = useConvexQuery(api.contacts.getAllContacts);
 
-  // Check for the createGroup parameter when the component mounts
-  // useEffect(() => {
-  //   const createGroupParam = searchParams.get("createGroup");
+ 
+  useEffect(() => {
+    if (searchParams.get("createGroup") !== "true") return;
 
-  //   if (createGroupParam === "true") {
-  //     // Open the modal
-  //     setIsCreateGroupModalOpen(true);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("createGroup");
 
-  //     // Remove the parameter from the URL
-  //     const url = new URL(window.location.href);
-  //     url.searchParams.delete("createGroup");
-
-  //     // Replace the current URL without the parameter
-  //     router.replace(url.pathname + url.search);
-  //   }
-  // }, [searchParams, router]);
+    router.replace(url.pathname + url.search);
+  }, [searchParams, router]);
 
   if (isLoading) {
     return (

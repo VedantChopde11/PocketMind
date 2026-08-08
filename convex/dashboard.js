@@ -162,117 +162,196 @@ export const getMonthlySpending = query({
     }
 })
 
-export const getUserGroup = query({
-    handler: async (ctx) => {
-        const user = await ctx.runQuery(internal.users.getCurrentUser)
 
-        const allGroups = await ctx.db.query("groups").collect()
+export const getUserGroups = query({
+  handler: async (ctx) => {
+    const user = await ctx.runQuery(internal.users.getCurrentUser);
 
-        const groups = allGroups.filter((group) => group.members.some((member) => member.userId === user._id))
+   
+    const allGroups = await ctx.db.query("groups").collect();
 
-        const enhancedGroups = await Promise.all(
-            groups.map(async (group) => {
-                
-                const expenses = await ctx.db
-                    .query("expenses")
-                    .withIndex("by_group", (q) => q.eq("groupId", group._id))
-                    .collect();
+    
+    const groups = allGroups.filter((group) =>
+      group.members.some((member) => member.userId === user._id)
+    );
 
-                
-                const balances = {};
+    
+    const enhancedGroups = await Promise.all(
+      groups.map(async (group) => {
+        
+        const expenses = await ctx.db
+          .query("expenses")
+          .withIndex("by_group", (q) => q.eq("groupId", group._id))
+          .collect();
 
-                group.members.forEach((member) => {
-                    balances[member.userId] = 0;
-                });
+        let balance = 0;
 
-               
-                expenses.forEach((expense) => {
-                    expense.splits.forEach((split) => {
-                        if (split.userId === expense.paidByUserId || split.paid) return;
+        expenses.forEach((expense) => {
+          if (expense.paidByUserId === user._id) {
+            
+            expense.splits.forEach((split) => {
+              if (split.userId !== user._id && !split.paid) {
+                balance += split.amount;
+              }
+            });
+          } else {
+          
+            const userSplit = expense.splits.find(
+              (split) => split.userId === user._id
+            );
+            if (userSplit && !userSplit.paid) {
+              balance -= userSplit.amount;
+            }
+          }
+        });
 
-                        balances[expense.paidByUserId] += split.amount;
-                        balances[split.userId] -= split.amount;
-                    });
-                });
+        
+        const settlements = await ctx.db
+          .query("settlements")
+          .filter((q) =>
+            q.and(
+              q.eq(q.field("groupId"), group._id),
+              q.or(
+                q.eq(q.field("paidByUserId"), user._id),
+                q.eq(q.field("receivedByUserId"), user._id)
+              )
+            )
+          )
+          .collect();
 
-                
-                const settlements = await ctx.db
-                    .query("settlements")
-                    .withIndex("by_group", (q) => q.eq("groupId", group._id))
-                    .collect();
+        settlements.forEach((settlement) => {
+          if (settlement.paidByUserId === user._id) {
+          
+            balance += settlement.amount;
+          } else {
+           
+            balance -= settlement.amount;
+          }
+        });
 
-                settlements.forEach((settlement) => {
-                    balances[settlement.paidByUserId] += settlement.amount;
-                    balances[settlement.receivedByUserId] -= settlement.amount;
-                });
+        return {
+          ...group,
+          id: group._id,
+          balance,
+        };
+      })
+    );
 
-                
-                const creditors = [];
-                const debtors = [];
-
-                for (const [userId, balance] of Object.entries(balances)) {
-                    if (balance > 0) {
-                        creditors.push({ userId, amount: balance });
-                    } else if (balance < 0) {
-                        debtors.push({ userId, amount: -balance });
-                    }
-                }
-
-                
-                const users= {};
-
-                await Promise.all(
-                    group.members.map(async (member) => {
-                        users[member.userId] = await ctx.db.get(member.userId);
-                    })
-                );
-
-                
-                const settlementList = [];
-
-                let i = 0;
-                let j = 0;
-
-                while (i < debtors.length && j < creditors.length) {
-                    const amount = Math.min(
-                        debtors[i].amount,
-                        creditors[j].amount
-                    );
-
-                    settlementList.push({
-                        from: {
-                            id: debtors[i].userId,
-                            name: users[debtors[i].userId]?.name ?? "Unknown",
-                            imageUrl: users[debtors[i].userId]?.imageUrl,
-                        },
-                        to: {
-                            id: creditors[j].userId,
-                            name: users[creditors[j].userId]?.name ?? "Unknown",
-                            imageUrl: users[creditors[j].userId]?.imageUrl,
-                        },
-                        amount,
-                    });
-
-                    debtors[i].amount -= amount;
-                    creditors[j].amount -= amount;
-
-                    if (debtors[i].amount === 0) i++;
-                    if (creditors[j].amount === 0) j++;
-                }
-
-               
-                const balance = balances[user._id] ?? 0;
-
-                return {
-                    ...group,
-                    id: group._id,
-                    balance,
-                    balances,
-                    settlements: settlementList,
-                };
-            })
-        );
-
-        return enhancedGroups;
+    return enhancedGroups;
     }
 })
+
+// export const getUserGroup = query({
+//     handler: async (ctx) => {
+//         const user = await ctx.runQuery(internal.users.getCurrentUser)
+
+//         const allGroups = await ctx.db.query("groups").collect()
+
+//         const groups = allGroups.filter((group) => group.members.some((member) => member.userId === user._id))
+
+//         const enhancedGroups = await Promise.all(
+//             groups.map(async (group) => {
+                
+//                 const expenses = await ctx.db
+//                     .query("expenses")
+//                     .withIndex("by_group", (q) => q.eq("groupId", group._id))
+//                     .collect();
+
+                
+//                 const balances = {};
+
+//                 group.members.forEach((member) => {
+//                     balances[member.userId] = 0;
+//                 });
+
+               
+//                 expenses.forEach((expense) => {
+//                     expense.splits.forEach((split) => {
+//                         if (split.userId === expense.paidByUserId || split.paid) return;
+
+//                         balances[expense.paidByUserId] += split.amount;
+//                         balances[split.userId] -= split.amount;
+//                     });
+//                 });
+
+                
+//                 const settlements = await ctx.db
+//                     .query("settlements")
+//                     .withIndex("by_group", (q) => q.eq("groupId", group._id))
+//                     .collect();
+
+//                 settlements.forEach((settlement) => {
+//                     balances[settlement.paidByUserId] += settlement.amount;
+//                     balances[settlement.receivedByUserId] -= settlement.amount;
+//                 });
+
+                
+//                 const creditors = [];
+//                 const debtors = [];
+
+//                 for (const [userId, balance] of Object.entries(balances)) {
+//                     if (balance > 0) {
+//                         creditors.push({ userId, amount: balance });
+//                     } else if (balance < 0) {
+//                         debtors.push({ userId, amount: -balance });
+//                     }
+//                 }
+
+                
+//                 const users= {};
+
+//                 await Promise.all(
+//                     group.members.map(async (member) => {
+//                         users[member.userId] = await ctx.db.get(member.userId);
+//                     })
+//                 );
+
+                
+//                 const settlementList = [];
+
+//                 let i = 0;
+//                 let j = 0;
+
+//                 while (i < debtors.length && j < creditors.length) {
+//                     const amount = Math.min(
+//                         debtors[i].amount,
+//                         creditors[j].amount
+//                     );
+
+//                     settlementList.push({
+//                         from: {
+//                             id: debtors[i].userId,
+//                             name: users[debtors[i].userId]?.name ?? "Unknown",
+//                             imageUrl: users[debtors[i].userId]?.imageUrl,
+//                         },
+//                         to: {
+//                             id: creditors[j].userId,
+//                             name: users[creditors[j].userId]?.name ?? "Unknown",
+//                             imageUrl: users[creditors[j].userId]?.imageUrl,
+//                         },
+//                         amount,
+//                     });
+
+//                     debtors[i].amount -= amount;
+//                     creditors[j].amount -= amount;
+
+//                     if (debtors[i].amount === 0) i++;
+//                     if (creditors[j].amount === 0) j++;
+//                 }
+
+               
+//                 const balance = balances[user._id] ?? 0;
+
+//                 return {
+//                     ...group,
+//                     id: group._id,
+//                     balance,
+//                     balances,
+//                     settlements: settlementList,
+//                 };
+//             })
+//         );
+
+//         return enhancedGroups;
+//     }
+// })
