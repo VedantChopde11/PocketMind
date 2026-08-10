@@ -23,15 +23,15 @@ export const getUserBalances = query({
                 for(const s of e.splits){
                     if(s.userId === user._id || s.paid) continue
 
-                    youAreOwed+= s.amount
+                    youAreOwed+= s.amount;
 
-                    (balanceByUser[s.userId] ??= {owed:0, owing: 0}).owed+=s.amount
+                    (balanceByUser[s.userId] ??= {owed:0, owing: 0}).owed += s.amount;
                 } 
             }
             else if(mySplit && !mySplit.paid){
-                youOwe += mySplit.amount
+                youOwe += mySplit.amount;
 
-                (balanceByUser[e.paidByUserId] ??= {owed: 0, owing: 0}).owing += mySplit.amount
+                (balanceByUser[e.paidByUserId] ??= {owed: 0, owing: 0}).owing += mySplit.amount;
             }
         }
        
@@ -43,8 +43,8 @@ export const getUserBalances = query({
 
         for(const s of settlements){
             if(s.paidByUserId === user._id){
-                youOwe -= s.amount
-                (balanceByUser[s.paidByUserId] ??= {owed:0 , owing: 0}).owed -= s.amount
+                youOwe -= s.amount;
+                (balanceByUser[s.paidByUserId] ??= {owed:0 , owing: 0}).owed -= s.amount;
             }
         }
 
@@ -120,7 +120,7 @@ export const getMonthlySpending = query({
             .withIndex("by_date" , (q)=> q.gte("date" , startOfYear))
             .collect()
 
-        const userExpenses = expenses.filter(
+        const userExpenses = allExpenses.filter(
             (expense) => 
                 expense.paidByUserId === user._id ||
                 expense.splits.some((split) => split.userId === user._id)
@@ -149,16 +149,15 @@ export const getMonthlySpending = query({
             if(userSplit){
                 monthlyTotals[monthStart] = (monthlyTotals[monthStart] || 0) + userSplit.amount
             }
-
-            const result = Object.entries(monthlyTotals).map(([monthStart,total]) => ({
-                month:parseInt(month),
+        })
+        const result = Object.entries(monthlyTotals).map(([monthStart,total]) => ({
+                month: parseInt(monthStart),
                 total,
             }))
 
             result.sort((a,b) => a.month - b.month)
 
             return result
-        })
     }
 })
 

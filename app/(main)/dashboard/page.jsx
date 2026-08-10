@@ -57,7 +57,7 @@ const DashboardPage = () => {
             </Button>
           </div>
 
-          {/* Balance overview cards */}
+         
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="pb-2">
@@ -133,20 +133,19 @@ const DashboardPage = () => {
             </Card>
           </div>
 
-          {/* Main dashboard content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left column */}
+            
             <div className="lg:col-span-2 space-y-6">
-              {/* Expense summary */}
+             
               <ExpenseSummary
                 monthlySpending={monthlySpending}
                 totalSpent={totalSpent}
               />
             </div>
 
-            {/* Right column */}
+           
             <div className="space-y-6">
-              {/* Balance details */}
+              
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -164,7 +163,7 @@ const DashboardPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Groups */}
+             
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
