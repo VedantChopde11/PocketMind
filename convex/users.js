@@ -1,6 +1,6 @@
 
 import { createClerkClient } from "@clerk/backend";
-import { mutation, query } from "./_generated/server";
+import { mutation, query , action } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 
@@ -8,30 +8,108 @@ const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY,
 });
 
-export const store = mutation({
+export const store = action({
   args: {},
+
   handler: async (ctx) => {
+
     const identity = await ctx.auth.getUserIdentity();
 
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("tokenIdentifier", identity.tokenIdentifier)
-      )
-      .unique();
+    let clerkUser;
 
-    if (user) return user._id;
+    try {
 
-    return await ctx.db.insert("users", {
-      name: identity.name ?? "Anonymous",
-      email: identity.email,
-      imageUrl: identity.pictureUrl,
-      tokenIdentifier: identity.tokenIdentifier,
-    });
+      clerkUser = await clerkClient.users.getUser(
+        identity.subject
+      );
+
+    } catch (error) {
+
+      console.error("CLERK ERROR:", error);
+
+      throw error;
+    }
+
+
+    const email =
+      clerkUser.emailAddresses[0]?.emailAddress ?? null;
+
+    const name =
+      clerkUser.fullName ??
+      clerkUser.firstName ??
+      "Anonymous";
+
+    const imageUrl =
+      clerkUser.imageUrl ?? null;
+
+
+    return await ctx.runMutation(
+      internal.users.saveUser,
+      {
+        tokenIdentifier: identity.tokenIdentifier,
+        name,
+        email,
+        imageUrl,
+      }
+    );
+  },
+});
+
+
+
+export const saveUser = mutation({
+
+  args: {
+    tokenIdentifier: v.string(),
+    name: v.string(),
+    email: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+  },
+
+  handler: async (ctx, args) => {
+
+    const existingUser =
+      await ctx.db
+        .query("users")
+        .withIndex(
+          "by_token",
+          (q) =>
+            q.eq(
+              "tokenIdentifier",
+              args.tokenIdentifier
+            )
+        )
+        .unique();
+
+
+    if (existingUser) {
+
+      await ctx.db.patch(
+        existingUser._id,
+        {
+          name: args.name,
+          email: args.email,
+          imageUrl: args.imageUrl,
+        }
+      );
+
+      return existingUser._id;
+    }
+
+
+    return await ctx.db.insert(
+      "users",
+      {
+        name: args.name,
+        email: args.email,
+        imageUrl: args.imageUrl,
+        tokenIdentifier: args.tokenIdentifier,
+      }
+    );
   },
 });
 
