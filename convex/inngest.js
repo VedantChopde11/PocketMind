@@ -1,4 +1,5 @@
 import { query } from "./_generated/server";
+import { v } from "convex/values";
 
 export const getUsersWithOutstandingDebts = query({
     handler: async (ctx) => {
@@ -106,4 +107,86 @@ export const getUsersWithOutstandingDebts = query({
         return result
     }
 
+})
+
+export const getUsersWithExpenses = query({
+    handler: async(ctx) => {
+        const users = await ctx.db.query("users").collect()
+        const result = []
+
+        // get current month
+        const now = new Date()
+        const oneMonthAgo = new Date(now)
+        oneMonthAgo.setMonth(now.getMonth()-1)
+        const monthStart = oneMonthAgo.getTime()
+
+        for(const user of users){
+            const paidExpenses = await ctx.db
+                .query("expenses")
+                .withIndex("by_date" , (q) => q.gte("date",monthStart))
+                .filter((q) => q.eq(q.field("paidByUserId"),user._id))
+                .collect()
+            
+            const allRecentExpenses = await ctx.db
+                .query("expenses")
+                .withIndex("by_date",(q) => q.gte("date" , monthStart))
+                .collect()
+
+            const splitExpenses = allRecentExpenses.filter((expense) =>
+                expense.splits.some((split) => split.userId == user._id)    
+            )
+
+            const userExpenses = [...new Set([...paidExpenses,...splitExpenses])]
+
+            if(userExpenses.length > 0){
+                result.push({
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                })
+            }
+
+        }
+        return result
+    }
+})
+
+export const getUserMonthlyExpenses = query({
+    args:{userId: v.id("users")},
+    handler: async(ctx,args) => {
+        const now = new Date()
+        const oneMonthAgo = new Date(now)
+        oneMonthAgo.setMonth(now.getMonth() -1)
+        const monthStart = oneMonthAgo.getTime()
+
+        const allExpenses = await ctx.db
+            .query("expenses")
+            .withIndex("by_date" , (q) => q.gte("date" , monthStart))
+            .collect()
+        
+        const userExpenses = allExpenses.filter((expense) => {
+            const isInvolved = 
+                expense.paidByUserId === args.userId || 
+                expense.splits.some((split) => split.userId === args.userId)
+            return isInvolved
+        })    
+
+        //format expense for ai analysis
+        return userExpenses.map((expense) => {
+            const userSplit = expense.splits.find(
+                (split) => split.userId === args.userId
+            )
+
+            return {
+                description:expense.description,
+                category:expense.category,
+                date:expense.date,
+                amount: userSplit?userSplit.amount:0,
+                isPayer: expense.paidByUserId === args.userId,
+                isGroup: expense.groupId !== undefined,
+
+            }
+        })
+        
+    }
 })
