@@ -169,7 +169,7 @@ export const createExpense = mutation({
     ),
     groupId: v.optional(v.id("groups")),
   },
-  handler: async() => {
+  handler: async(ctx , args) => {
     const user = await ctx.runQuery(internal.users.getCurrentUser)
 
     if(args.groupId){

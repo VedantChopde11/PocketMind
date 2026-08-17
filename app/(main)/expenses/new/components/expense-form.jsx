@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState , useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -129,21 +129,29 @@ export function ExpenseForm({
   const splitType = watch("splitType");
 
   
-  const currentUserParticipant = currentUser
-    ? {
-        id: currentUser._id,
-        name: currentUser.name,
-        email: currentUser.email,
-        imageUrl: currentUser.imageUrl,
-      }
-    : null;
+  const currentUserParticipant = useMemo(() => {
+    if (!currentUser) return null;
 
-  
-  const effectiveParticipants =
-    participants.length === 0 &&
-    currentUserParticipant
-      ? [currentUserParticipant]
-      : participants;
+    return {
+      id: currentUser._id,
+      name: currentUser.name,
+      email: currentUser.email,
+      imageUrl: currentUser.imageUrl,
+    };
+  }, [
+      currentUser?._id,
+      currentUser?.name,
+      currentUser?.email,
+      currentUser?.imageUrl,
+  ]);
+
+  const effectiveParticipants = useMemo(() => {
+    if (participants.length === 0 && currentUserParticipant) {
+      return [currentUserParticipant];
+    }
+
+    return participants;
+  }, [participants, currentUserParticipant]);
 
   const onSubmit = async (data) => {
     try {
