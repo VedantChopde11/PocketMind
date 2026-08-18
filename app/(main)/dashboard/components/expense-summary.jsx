@@ -78,7 +78,7 @@ export function ExpenseSummary({ monthlySpending, totalSpent }) {
             </p>
 
             <p className="text-2xl font-semibold mt-1">
-              ${Number(thisMonthTotal).toFixed(2)}
+              ₹{Number(thisMonthTotal).toFixed(2)}
             </p>
           </div>
 
@@ -89,7 +89,7 @@ export function ExpenseSummary({ monthlySpending, totalSpent }) {
             </p>
 
             <p className="text-2xl font-semibold mt-1">
-              ${Number(totalSpent || 0).toFixed(2)}
+              ₹{Number(totalSpent || 0).toFixed(2)}
             </p>
           </div>
         </div>
@@ -109,7 +109,7 @@ export function ExpenseSummary({ monthlySpending, totalSpent }) {
 
               <Tooltip
                 formatter={(value) => [
-                  `$${Number(value).toFixed(2)}`,
+                  `₹${Number(value).toFixed(2)}`,
                   "Amount",
                 ]}
                 labelFormatter={(label) => label}

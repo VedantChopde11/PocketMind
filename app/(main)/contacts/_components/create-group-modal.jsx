@@ -78,23 +78,23 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
 
   const onSubmit = async (data) => {
     try {
-      // Extract member IDs
+   
       const memberIds = selectedMembers.map((member) => member.id);
 
-      // Create the group
+     
       const groupId = await createGroup.mutate({
         name: data.name,
         description: data.description,
         members: memberIds,
       });
 
-      // Success
+  
       toast.success("Group created successfully!");
       reset();
       setSelectedMembers([]);
       onClose();
 
-      // Redirect to the new group page
+    
       if (onSuccess) {
         onSuccess(groupId);
       }
@@ -141,7 +141,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
           <div className="space-y-2">
             <Label>Members</Label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {/* Current user (always included) */}
+             
               {currentUser && (
                 <Badge variant="secondary" className="px-3 py-1">
                   <Avatar className="h-5 w-5 mr-2">
@@ -154,7 +154,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
                 </Badge>
               )}
 
-              {/* Selected members */}
+     
               {selectedMembers.map((member) => (
                 <Badge
                   key={member.id}
@@ -178,7 +178,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
                 </Badge>
               ))}
 
-              {/* Add member button with dropdown */}
+
               <Popover open={commandOpen} onOpenChange={setCommandOpen}>
                 <PopoverTrigger asChild>
                   <Button

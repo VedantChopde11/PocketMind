@@ -53,7 +53,7 @@ export default function ContactsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Individual Contacts */}
+    
         <div>
           <h2 className="text-xl font-bold mb-4 flex items-center">
             <User className="mr-2 h-5 w-5" />
@@ -95,7 +95,7 @@ export default function ContactsPage() {
           )}
         </div>
 
-        {/* Groups */}
+      
         <div>
           <h2 className="text-xl font-bold mb-4 flex items-center">
             <Users className="mr-2 h-5 w-5" />
