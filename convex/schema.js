@@ -61,4 +61,25 @@ export default defineSchema({
     .index("by_user_and_group", ["paidByUserId" , "groupId"])
     .index("by_receiver_and_group" , ["receivedByUserId" , "groupId"])
     .index("by__date", ["date"]),
+
+
+  paymentTransactions: defineTable({
+    razorpayOrderId: v.string(),
+    razorpayPaymentId: v.string(),
+    amount: v.number(),
+    currency: v.string(),
+
+    status: v.string(),
+
+    paidByUserId: v.id("users"),
+    receivedByUserId: v.id("users"),
+
+    groupId: v.optional(v.id("groups")),
+    note: v.optional(v.string()),
+
+    createdAt: v.number(),  
+  })
+    .index("by_razorpay_order_id", ["razorpayOrderId"])
+    .index("by_razorpay_payment_id", ["razorpayPaymentId"])
+    .index("by_user", ["paidByUserId"])
 });
