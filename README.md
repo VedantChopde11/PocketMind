@@ -1,36 +1,138 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# PocketMind 💸
+### Smart Expense Sharing & Settlement Platform
 
-## Getting Started
+PocketMind is a full-stack expense-sharing application designed to help friends, roommates, and groups manage shared expenses, track balances, and simplify settlements in one place.
 
-First, run the development server:
+🔗 **Live Demo:** [Try PocketMind](https://pocketmind-git-preview-vedantchopde11s-projects.vercel.app/) 
+💻 **GitHub Repository:** [PocketMind](https://github.com/VedantChopde11/PocketMind)
+
+---
+
+## ✨ Features
+
+- 💰 **Expense Management** — Create and manage shared expenses with payer and split details.
+- 👥 **Group Management** — Organize expenses and members into groups.
+- 🧮 **Balance Tracking** — Track who owes whom and calculate outstanding balances.
+- 🔄 **Debt Simplification** — Reduce the number of transactions needed to settle group debts.
+- 💳 **Settlement Management** — Record payments and track outstanding balances.
+- 🔐 **Authentication** — Manage user authentication using Clerk.
+- ⚡ **Reactive Data** — Use Convex for backend operations and reactive data updates.
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|---|---|
+| Framework | Next.js |
+| Frontend | React |
+| Backend & Database | Convex |
+| Authentication | Clerk |
+| AI Integration | Google Generative AI, where implemented |
+| Background Workflows | Inngest, where implemented |
+| Email Integration | Resend, where implemented |
+
+## 🧮 How It Works
+
+1. Sign in to PocketMind.
+2. Create or join an expense-sharing group.
+3. Add shared expenses and specify who paid.
+4. Split expenses among group members.
+5. View balances to identify who owes whom.
+6. Record settlements to update outstanding balances.
+
+## 🏗️ Architecture
+
+```text
+              ┌────────────────────┐
+              │    Next.js / React │
+              │    User Interface  │
+              └─────────┬──────────┘
+                        │
+                        ▼
+              ┌────────────────────┐
+              │    Clerk Auth      │
+              │   Authentication   │
+              └────────────────────┘
+                        │
+                        ▼
+              ┌────────────────────┐
+              │   Convex Backend   │
+              │ Queries / Mutations│
+              └─────────┬──────────┘
+                        │
+                        ▼
+              ┌────────────────────┐
+              │ Expense & Group    │
+              │ Data Management    │
+              └────────────────────┘
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js
+- npm
+- A Convex account and configured deployment
+- A Clerk account and application
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/VedantChopde11/PocketMind.git
+cd PocketMind
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure environment variables
+
+Create a `.env.local` file in the project root and configure the variables required by your application.
+
+Example:
+
+```env
+NEXT_PUBLIC_CONVEX_URL=your_convex_deployment_url
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+```
+
+Use the exact variable names required by your source code. Additional configuration may be required for AI, email, or background workflow integrations.
+
+**Important:** Never commit real API keys, database credentials, or secret keys to GitHub.
+
+### 4. Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Ensure your Convex deployment and authentication configuration are active before testing the application.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔮 Future Enhancements
 
-## Learn More
+- AI-powered receipt scanning and expense extraction.
+- Monthly spending analytics and visual reports.
+- Automated expense notifications and settlement reminders.
+- Exportable expense and settlement history.
+- Multi-currency expense tracking.
+- Automated tests for settlement calculations and balance consistency.
 
-To learn more about Next.js, take a look at the following resources:
+*These are potential future enhancements, not claims of existing functionality.*
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 👨‍💻 Author
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Vedant Chopde**  
+Engineering Student | Full-Stack Developer
 
-## Deploy on Vercel
+- GitHub: [VedantChopde11](https://github.com/VedantChopde11)
+- Project: [PocketMind](https://github.com/VedantChopde11/PocketMind)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+⭐ If you find this project interesting, consider starring the repository!
